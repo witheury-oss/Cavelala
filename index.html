@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inbox | Mailbox Cavela</title>
+  <!-- Google Fonts: Quicksand & Fredoka untuk kesan cute strawberry -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-cream: #fff5f6;
+      --card-bg: #ffffff;
+      --berry-dark: #5c1624;
+      --berry-red: #ff3b5c;
+      --berry-soft: #ff758f;
+      --berry-pastel: #ffe3e8;
+      --berry-border: #f8bbd0;
+      --leaf-green: #2ecc71;
+      --text-muted: #9e6b75;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: var(--bg-cream);
+      /* Pola bintik stroberi halus di background */
+      background-image: radial-gradient(#ffd1da 1.5px, transparent 1.5px), radial-gradient(#ffe5ec 1.5px, var(--bg-cream) 1.5px);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+      color: var(--berry-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 16px 36px;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Card Style Dasar */
+    .card {
+      background: var(--card-bg);
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(255, 59, 92, 0.08);
+      border: 2px solid #fff;
+      position: relative;
+    }
+
+    /* 1. HEADER CARD */
+    .header-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 22px;
+    }
+
+    .brand-title {
+      text-align: center;
+    }
+
+    .brand-title h1 {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.65rem;
+      color: var(--berry-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      line-height: 1.1;
+    }
+
+    .brand-title span.subtitle {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--berry-red);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .theme-btn {
+      position: absolute;
+      right: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--berry-pastel);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--berry-red);
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .theme-btn:hover {
+      transform: rotate(15deg) scale(1.06);
+      background: #ffd0d9;
+    }
+
+    /* 2. CUSTOM EMAIL CARD */
+    .email-card-title {
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.02rem;
+      color: var(--berry-dark);
+      margin-bottom: 16px;
+    }
+
+    .form-grid {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .inputs-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 15px;
+      border: 1.8px solid var(--berry-border);
+      font-family: 'Quicksand', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--berry-dark);
+      background: #fff;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-box::placeholder {
+      color: #c99aa3;
+      font-weight: 500;
+    }
+
+    .input-box:focus {
+      border-color: var(--berry-red);
+      box-shadow: 0 0 0 3px rgba(255, 59, 92, 0.12);
+    }
+
+    /* Custom Select Dropdown */
+    .select-trigger {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      border-color: #9e3d50;
+    }
+
+    .select-trigger svg {
+      transition: transform 0.25s ease;
+    }
+
+    .select-trigger.active svg {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 105%;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 12px 28px rgba(92, 22, 36, 0.14);
+      border: 1.5px solid var(--berry-pastel);
+      z-index: 30;
+      display: none;
+    }
+
+    .dropdown-menu.open {
+      display: block;
+      animation: popDown 0.18s ease-out;
+    }
+
+    @keyframes popDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-option {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.96rem;
+      color: var(--berry-dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .dropdown-option:hover {
+      background: var(--berry-pastel);
+      color: var(--berry-red);
+    }
+
+    /* Tombol Submit Panah Kanan */
+    .submit-arrow-btn {
+      width: 56px;
+      border-radius: 18px;
+      border: none;
+      background: linear-gradient(180deg, #ff758f 0%, #ff3b5c 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(255, 59, 92, 0.28);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .submit-arrow-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .submit-arrow-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Bar Alamat Email Aktif di Bawah Input */
+    .active-email-bar {
+      margin-top: 12px;
+      background: var(--berry-pastel);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--berry-dark);
+    }
+
+    .copy-badge {
+      background: #fff;
+      color: var(--berry-red);
+      border: none;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255, 59, 92, 0.12);
+    }
+
+    /* 3. INBOX CARD */
+    .inbox-card {
+      min-height: 330px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .inbox-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .inbox-status-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .inbox-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .inbox-title-row h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--berry-dark);
+    }
+
+    .badge-active {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--berry-pastel);
+      color: var(--berry-red);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 99px;
+    }
+
+    .dot-green {
+      width: 8px;
+      height: 8px;
+      background-color: var(--leaf-green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+    }
+
+    .msg-counter {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .refresh-btn {
+      background: var(--berry-pastel);
+      border: none;
+      border-radius: 14px;
+      padding: 9px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      font-size: 0.86rem;
+      color: var(--berry-dark);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .refresh-btn:hover {
+      background: #ffd0d9;
+    }
+
+    .spin {
+      animation: rotateSpin 0.6s ease-in-out;
+    }
+
+    @keyframes rotateSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Empty State Inbox */
+    .empty-inbox {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 36px 16px 20px;
+    }
+
+    .empty-icon {
+      color: #edd5d9;
+      margin-bottom: 16px;
+    }
+
+    .empty-inbox h3 {
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--berry-dark);
+      margin-bottom: 8px;
+    }
+
+    .empty-inbox p {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      max-width: 250px;
+      line-height: 1.5;
+    }
+
+    /* 4. FOOTER */
+    footer {
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- HEADER -->
+    <header class="card header-card">
+      <div class="brand-title">
+        <h1>🍓 Mailbox</h1>
+        <span class="subtitle">Cavela</span>
+      </div>
+      <button class="theme-btn" title="Strawberry Theme" aria-label="Theme">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- CUSTOM EMAIL BOX -->
+    <section class="card">
+      <div class="email-card-title">Custom Email</div>
+
+      <div class="form-grid">
+        <div class="inputs-col">
+          <input type="text" id="usernameInput" class="input-box" placeholder="Enter Username" autocomplete="off">
+
+          <!-- Dropdown Select Domain -->
+          <div class="input-box select-trigger" id="domainTrigger">
+            <span id="selectedDomainText">Select Domain</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <!-- Pop-up Opsi Domain (Terbuka seperti pada gambar referensi) -->
+          <div class="dropdown-menu open" id="domainMenu">
+            <div class="dropdown-option" data-domain="cavela.my.id">
+              🍓 cavela.my.id
+            </div>
+          </div>
+        </div>
+
+        <button class="submit-arrow-btn" id="setEmailBtn" aria-label="Buat Email">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Bar Status Email -->
+      <div class="active-email-bar">
+        <span id="currentEmailDisplay">strawberry@cavela.my.id</span>
+        <button class="copy-badge" id="copyBtn">Salin</button>
+      </div>
+    </section>
+
+    <!-- INBOX BOX -->
+    <main class="card inbox-card">
+      <div class="inbox-top">
+        <div class="inbox-status-group">
+          <div class="inbox-title-row">
+            <h2>Inbox</h2>
+            <span class="badge-active">
+              <span class="dot-green"></span>
+              Inbox active
+            </span>
+          </div>
+          <div class="msg-counter">0 dari 0 pesan</div>
+        </div>
+
+        <button class="refresh-btn" id="refreshBtn">
+          <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="empty-inbox">
+        <div class="empty-icon">
+          <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+          </svg>
+        </div>
+        <h3>Your inbox is empty</h3>
+        <p>Incoming emails will appear here automatically.</p>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+      Copyright &copy; 2026 Cavela Mail. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    const domainTrigger = document.getElementById('domainTrigger');
+    const domainMenu = document.getElementById('domainMenu');
+    const selectedDomainText = document.getElementById('selectedDomainText');
+    const usernameInput = document.getElementById('usernameInput');
+    const setEmailBtn = document.getElementById('setEmailBtn');
+    const currentEmailDisplay = document.getElementById('currentEmailDisplay');
+    const copyBtn = document.getElementById('copyBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshIcon = document.getElementById('refreshIcon');
+
+    let chosenDomain = 'cavela.my.id';
+
+    // Buka/tutup dropdown domain
+    domainTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      domainMenu.classList.toggle('open');
+      domainTrigger.classList.toggle('active');
+    });
+
+    // Pilih domain dari menu
+    document.querySelectorAll('.dropdown-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        chosenDomain = opt.getAttribute('data-domain');
+        selectedDomainText.textContent = chosenDomain;
+        domainMenu.classList.remove('open');
+        domainTrigger.classList.remove('active');
+      });
+    });
+
+    // Tutup dropdown saat klik di luar
+    document.addEventListener('click', () => {
+      domainMenu.classList.remove('open');
+      domainTrigger.classList.remove('active');
+    });
+
+    // Set alamat email ketika tombol panah diklik
+    setEmailBtn.addEventListener('click', () => {
+      const user = usernameInput.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '') || 'strawberry';
+      selectedDomainText.textContent = chosenDomain;
+      currentEmailDisplay.textContent = `${user}@${chosenDomain}`;
+      domainMenu.classList.remove('open');
+    });
+
+    // Salin email
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(currentEmailDisplay.textContent);
+      copyBtn.textContent = 'Tersalin! 🍓';
+      setTimeout(() => { copyBtn.textContent = 'Salin'; }, 1800);
+    });
+
+    // Animasi tombol refresh
+    refreshBtn.addEventListener('click', () => {
+      refreshIcon.classList.remove('spin');
+      void refreshIcon.offsetWidth; // trigger reflow
+      refreshIcon.classList.add('spin');
+    });
+  </script>
+</body>
+</html>

@@ -87,6 +87,7 @@
       margin-top: 3px;
     }
 
+    /* Tombol Tema */
     .theme-btn {
       position: absolute;
       right: 18px;
@@ -106,6 +107,50 @@
     .theme-btn:hover {
       transform: rotate(15deg) scale(1.06);
       background: #ffd0d9;
+    }
+
+    /* Menu Pilihan Tema Warna */
+    .theme-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 18px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 10px;
+      box-shadow: 0 12px 28px rgba(92, 22, 36, 0.14);
+      border: 1.5px solid var(--berry-pastel);
+      z-index: 40;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .theme-menu.open {
+      display: flex;
+      animation: popDown 0.18s ease-out;
+    }
+
+    .theme-option {
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--berry-dark);
+      transition: background 0.15s;
+    }
+
+    .theme-option:hover {
+      background: var(--berry-pastel);
+    }
+
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
     }
 
     .email-card-title {
@@ -217,7 +262,7 @@
       width: 56px;
       border-radius: 18px;
       border: none;
-      background: linear-gradient(180deg, #ff758f 0%, #ff3b5c 100%);
+      background: linear-gradient(180deg, var(--berry-soft) 0%, var(--berry-red) 100%);
       color: #fff;
       display: flex;
       align-items: center;
@@ -395,7 +440,9 @@
         <h1>🍓 Mailbox</h1>
         <span class="subtitle">Cavela</span>
       </div>
-      <button class="theme-btn" title="Strawberry Theme" aria-label="Theme">
+      
+      <!-- Tombol Ganti Tema Warna -->
+      <button class="theme-btn" id="themeToggleBtn" title="Ganti Tema Warna" aria-label="Theme">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
           <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
@@ -404,6 +451,22 @@
           <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
         </svg>
       </button>
+
+      <!-- Menu Pilihan Warna Tema -->
+      <div class="theme-menu" id="themeMenu">
+        <div class="theme-option" data-theme="strawberry">
+          <span class="color-dot" style="background: #ff3b5c;"></span> Strawberry (Red)
+        </div>
+        <div class="theme-option" data-theme="matcha">
+          <span class="color-dot" style="background: #27ae60;"></span> Matcha (Green)
+        </div>
+        <div class="theme-option" data-theme="blueberry">
+          <span class="color-dot" style="background: #2980b9;"></span> Blueberry (Blue)
+        </div>
+        <div class="theme-option" data-theme="taro">
+          <span class="color-dot" style="background: #8e44ad;"></span> Taro (Purple)
+        </div>
+      </div>
     </header>
 
     <!-- CUSTOM EMAIL BOX -->
@@ -503,13 +566,69 @@
     const inboxContentArea = document.getElementById('inboxContentArea');
     const msgCounter = document.querySelector('.msg-counter');
 
+    // Elemen Tema Warna
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeMenu = document.getElementById('themeMenu');
+
     let chosenDomain = 'cavela.my.id';
+
+    // Pengaturan Palet Tema Warna
+    const themes = {
+      strawberry: {
+        bgCream: '#fff5f6', berryDark: '#5c1624', berryRed: '#ff3b5c', 
+        berrySoft: '#ff758f', berryPastel: '#ffe3e8', berryBorder: '#f8bbd0', textMuted: '#9e6b75'
+      },
+      matcha: {
+        bgCream: '#f4fbf7', berryDark: '#134e26', berryRed: '#27ae60', 
+        berrySoft: '#2ecc71', berryPastel: '#e1f5e9', berryBorder: '#c8e6c9', textMuted: '#558b6e'
+      },
+      blueberry: {
+        bgCream: '#f0f7ff', berryDark: '#103456', berryRed: '#2980b9', 
+        berrySoft: '#3498db', berryPastel: '#e3f2fd', berryBorder: '#bbdefb', textMuted: '#547a9e'
+      },
+      taro: {
+        bgCream: '#fbf5ff', berryDark: '#3b1456', berryRed: '#8e44ad', 
+        berrySoft: '#9b59b6', berryPastel: '#f3e5f5', berryBorder: '#e1bee7', textMuted: '#7b5a8e'
+      }
+    };
+
+    // Fungsi Ganti Tema
+    function applyTheme(themeName) {
+      const t = themes[themeName];
+      if (!t) return;
+      const r = document.documentElement;
+      r.style.setProperty('--bg-cream', t.bgCream);
+      r.style.setProperty('--berry-dark', t.berryDark);
+      r.style.setProperty('--berry-red', t.berryRed);
+      r.style.setProperty('--berry-soft', t.berrySoft);
+      r.style.setProperty('--berry-pastel', t.berryPastel);
+      r.style.setProperty('--berry-border', t.berryBorder);
+      r.style.setProperty('--text-muted', t.textMuted);
+      localStorage.setItem('mailbox_theme', themeName);
+    }
+
+    // Buka/tutup menu tema
+    themeToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themeMenu.classList.toggle('open');
+      domainMenu.classList.remove('open');
+    });
+
+    // Pilih tema dari menu
+    document.querySelectorAll('.theme-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const themeName = opt.getAttribute('data-theme');
+        applyTheme(themeName);
+        themeMenu.classList.remove('open');
+      });
+    });
 
     // Buka/tutup dropdown domain
     domainTrigger.addEventListener('click', (e) => {
       e.stopPropagation();
       domainMenu.classList.toggle('open');
       domainTrigger.classList.toggle('active');
+      themeMenu.classList.remove('open');
     });
 
     // Pilih domain dari menu
@@ -526,7 +645,29 @@
     document.addEventListener('click', () => {
       domainMenu.classList.remove('open');
       domainTrigger.classList.remove('active');
+      themeMenu.classList.remove('open');
     });
+
+    // Fungsi untuk membersihkan teks teknis header email
+    function cleanEmailBody(bodyText) {
+      if (!bodyText) return "(Tidak ada isi pesan)";
+      let lines = bodyText.split('\n');
+      let cleanLines = [];
+      let skipping = true;
+
+      for (let line of lines) {
+        let l = line.trim();
+        if (skipping && (l.startsWith('Received:') || l.startsWith('DKIM-Signature:') || l.startsWith('Content-Type:') || l.startsWith('MIME-Version:') || l.startsWith('X-') || l.startsWith('Authentication-Results:') || l.includes('cloudflare-email.net') || l.includes('google.com'))) {
+          continue;
+        }
+        if (l === '' && skipping) continue;
+        skipping = false;
+        cleanLines.push(line);
+      }
+
+      let result = cleanLines.join('\n').trim();
+      return result.length > 0 ? result : bodyText;
+    }
 
     // Fungsi untuk menarik data email dari Cloudflare Worker
     async function loadInbox() {
@@ -558,11 +699,12 @@
         let listHtml = `<div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; padding-right: 4px;">`;
         
         emails.forEach((mail) => {
+          let cleanBody = cleanEmailBody(mail.body);
           listHtml += `
-            <div style="background: #fff5f6; border: 1.5px solid var(--berry-border); border-radius: 16px; padding: 14px 16px;">
+            <div style="background: var(--bg-cream); border: 1.5px solid var(--berry-border); border-radius: 16px; padding: 14px 16px;">
               <div style="font-weight: 700; font-size: 0.9rem; color: var(--berry-dark); margin-bottom: 4px;">Dari: ${mail.sender}</div>
               <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 8px;">Subjek: ${mail.subject}</div>
-              <div style="font-size: 0.82rem; color: var(--text-muted); background: #ffffff; padding: 10px; border-radius: 10px; border: 1px solid #ffe0e6; white-space: pre-wrap; word-break: break-all;">${mail.body}</div>
+              <div style="font-size: 0.84rem; color: var(--berry-dark); background: #ffffff; padding: 12px; border-radius: 10px; border: 1px solid var(--berry-border); white-space: pre-wrap; word-break: break-all;">${cleanBody}</div>
             </div>
           `;
         });
@@ -599,8 +741,10 @@
       loadInbox();
     });
 
-    // Otomatis muat saat halaman dibuka
+    // Muat tema yang tersimpan saat halaman dibuka
     window.onload = () => {
+      const savedTheme = localStorage.getItem('mailbox_theme') || 'strawberry';
+      applyTheme(savedTheme);
       loadInbox();
     };
   </script>

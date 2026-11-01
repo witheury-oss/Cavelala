@@ -221,4 +221,403 @@
       justify-content: center;
       cursor: pointer;
       box-shadow: 0 6px 16px rgba(255, 59, 92, 0.28);
-      transition: transform 0.15s
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .submit-arrow-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .submit-arrow-btn:active { transform: scale(0.96); }
+
+    .active-email-bar {
+      margin-top: 12px;
+      background: var(--berry-pastel);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--berry-dark);
+    }
+
+    .copy-badge {
+      background: #fff;
+      color: var(--berry-red);
+      border: none;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255, 59, 92, 0.12);
+    }
+
+    .inbox-card { min-height: 330px; display: flex; flex-direction: column; }
+    .inbox-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .inbox-status-group { display: flex; flex-direction: column; gap: 6px; }
+    .inbox-title-row { display: flex; align-items: center; gap: 10px; }
+    .inbox-title-row h2 { font-size: 1.25rem; font-weight: 700; color: var(--berry-dark); }
+
+    .badge-active {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--berry-pastel);
+      color: var(--berry-red);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 99px;
+    }
+
+    .dot-green {
+      width: 8px; height: 8px;
+      background-color: var(--leaf-green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+    }
+
+    .msg-counter { font-size: 0.88rem; font-weight: 600; color: var(--text-muted); }
+
+    .refresh-btn {
+      background: var(--berry-pastel);
+      border: none;
+      border-radius: 14px;
+      padding: 9px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      font-size: 0.86rem;
+      color: var(--berry-dark);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .refresh-btn:hover { background: #ffd0d9; }
+    .spin { animation: rotateSpin 0.6s ease-in-out; }
+
+    @keyframes rotateSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-inbox {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 36px 16px 20px;
+    }
+
+    .empty-icon { color: #edd5d9; margin-bottom: 16px; }
+    .empty-inbox h3 { font-size: 1.18rem; font-weight: 700; color: var(--berry-dark); margin-bottom: 8px; }
+    .empty-inbox p { font-size: 0.94rem; font-weight: 600; color: var(--text-muted); max-width: 250px; line-height: 1.5; }
+
+    footer { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- HEADER -->
+    <header class="card header-card">
+      <div class="brand-title">
+        <h1>🍓 Mailbox</h1>
+        <span class="subtitle">Cavela</span>
+      </div>
+      
+      <button class="theme-btn" id="themeToggleBtn" title="Ganti Tema Warna" aria-label="Theme">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+        </svg>
+      </button>
+
+      <div class="theme-menu" id="themeMenu">
+        <div class="theme-option" data-theme="strawberry"><span class="color-dot" style="background: #ff3b5c;"></span> Strawberry</div>
+        <div class="theme-option" data-theme="matcha"><span class="color-dot" style="background: #27ae60;"></span> Matcha</div>
+        <div class="theme-option" data-theme="blueberry"><span class="color-dot" style="background: #2980b9;"></span> Blueberry</div>
+        <div class="theme-option" data-theme="taro"><span class="color-dot" style="background: #8e44ad;"></span> Taro</div>
+      </div>
+    </header>
+
+    <!-- CUSTOM EMAIL BOX -->
+    <section class="card">
+      <div class="email-card-title">Custom Email</div>
+
+      <div class="form-grid">
+        <div class="inputs-col">
+          <input type="text" id="usernameInput" class="input-box" placeholder="Enter Username" autocomplete="off">
+
+          <div class="input-box select-trigger" id="domainTrigger">
+            <span id="selectedDomainText">cavela.my.id</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <div class="dropdown-menu" id="domainMenu">
+            <div class="dropdown-option" data-domain="cavela.my.id">🍓 cavela.my.id</div>
+          </div>
+        </div>
+
+        <button class="submit-arrow-btn" id="setEmailBtn" aria-label="Buat Email">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <div class="active-email-bar">
+        <span id="currentEmailDisplay">strawberry@cavela.my.id</span>
+        <button class="copy-badge" id="copyBtn">Salin</button>
+      </div>
+    </section>
+
+    <!-- INBOX BOX -->
+    <main class="card inbox-card">
+      <div class="inbox-top">
+        <div class="inbox-status-group">
+          <div class="inbox-title-row">
+            <h2>Inbox</h2>
+            <span class="badge-active"><span class="dot-green"></span> Inbox active</span>
+          </div>
+          <div class="msg-counter">0 pesan masuk</div>
+        </div>
+
+        <button class="refresh-btn" id="refreshBtn">
+          <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+
+      <div id="inboxContentArea">
+        <div class="empty-inbox">
+          <div class="empty-icon">
+            <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+              <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            </svg>
+          </div>
+          <h3>Your inbox is empty</h3>
+          <p>Incoming emails will appear here automatically.</p>
+        </div>
+      </div>
+    </main>
+
+    <footer>Copyright &copy; 2026 Cavela Mail. All rights reserved.</footer>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://ca-vela-mailbox.pinkeuzie.workers.dev";
+
+    const domainTrigger = document.getElementById('domainTrigger');
+    const domainMenu = document.getElementById('domainMenu');
+    const selectedDomainText = document.getElementById('selectedDomainText');
+    const usernameInput = document.getElementById('usernameInput');
+    const setEmailBtn = document.getElementById('setEmailBtn');
+    const currentEmailDisplay = document.getElementById('currentEmailDisplay');
+    const copyBtn = document.getElementById('copyBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshIcon = document.getElementById('refreshIcon');
+    const inboxContentArea = document.getElementById('inboxContentArea');
+    const msgCounter = document.querySelector('.msg-counter');
+
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeMenu = document.getElementById('themeMenu');
+
+    let chosenDomain = 'cavela.my.id';
+
+    const themes = {
+      strawberry: { bgCream: '#fff5f6', berryDark: '#5c1624', berryRed: '#ff3b5c', berrySoft: '#ff758f', berryPastel: '#ffe3e8', berryBorder: '#f8bbd0', textMuted: '#9e6b75' },
+      matcha: { bgCream: '#f4fbf7', berryDark: '#134e26', berryRed: '#27ae60', berrySoft: '#2ecc71', berryPastel: '#e1f5e9', berryBorder: '#c8e6c9', textMuted: '#558b6e' },
+      blueberry: { bgCream: '#f0f7ff', berryDark: '#103456', berryRed: '#2980b9', berrySoft: '#3498db', berryPastel: '#e3f2fd', berryBorder: '#bbdefb', textMuted: '#547a9e' },
+      taro: { bgCream: '#fbf5ff', berryDark: '#3b1456', berryRed: '#8e44ad', berrySoft: '#9b59b6', berryPastel: '#f3e5f5', berryBorder: '#e1bee7', textMuted: '#7b5a8e' }
+    };
+
+    function applyTheme(themeName) {
+      const t = themes[themeName];
+      if (!t) return;
+      const r = document.documentElement;
+      r.style.setProperty('--bg-cream', t.bgCream);
+      r.style.setProperty('--berry-dark', t.berryDark);
+      r.style.setProperty('--berry-red', t.berryRed);
+      r.style.setProperty('--berry-soft', t.berrySoft);
+      r.style.setProperty('--berry-pastel', t.berryPastel);
+      r.style.setProperty('--berry-border', t.berryBorder);
+      r.style.setProperty('--text-muted', t.textMuted);
+      localStorage.setItem('mailbox_theme', themeName);
+    }
+
+    themeToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themeMenu.classList.toggle('open');
+      domainMenu.classList.remove('open');
+    });
+
+    document.querySelectorAll('.theme-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        applyTheme(opt.getAttribute('data-theme'));
+        themeMenu.classList.remove('open');
+      });
+    });
+
+    domainTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      domainMenu.classList.toggle('open');
+      domainTrigger.classList.toggle('active');
+      themeMenu.classList.remove('open');
+    });
+
+    document.querySelectorAll('.dropdown-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        chosenDomain = opt.getAttribute('data-domain');
+        selectedDomainText.textContent = chosenDomain;
+        domainMenu.classList.remove('open');
+        domainTrigger.classList.remove('active');
+      });
+    });
+
+    document.addEventListener('click', () => {
+      domainMenu.classList.remove('open');
+      domainTrigger.classList.remove('active');
+      themeMenu.classList.remove('open');
+    });
+
+    // Pembersih Super Presisi: Menghilangkan seluruh baris teknis dan menyisakan isi pesan aslinya saja
+    function cleanEmailBody(bodyText) {
+      if (!bodyText) return "(Tidak ada isi pesan)";
+      
+      let lines = bodyText.split(/\r?\n/);
+      let contentLines = [];
+      let capturing = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        let trimmed = line.trim();
+
+        // Deteksi awal bagian isi teks biasa atau html murni
+        if (trimmed.toLowerCase().includes('content-type: text/plain') || trimmed.toLowerCase().includes('content-type: text/html')) {
+          capturing = true;
+          // Lewati baris kosong setelah header content-type
+          if (i + 1 < lines.length && lines[i+1].trim() === '') {
+            i++;
+          }
+          continue;
+        }
+
+        // Jika menemui tanda batas MIME penutup berikutnya, berhenti menangkap
+        if (capturing && trimmed.startsWith('--')) {
+          capturing = false;
+        }
+
+        if (capturing) {
+          contentLines.push(line);
+        }
+      }
+
+      // Jika metode pertama tidak menangkap apa pun, gunakan penyaringan baris metadata kasar secara aman
+      if (contentLines.length === 0 || contentLines.join('').trim() === '') {
+        let skip = true;
+        for (let line of lines) {
+          let t = line.trim();
+          // Lewati baris-baris metadata header email di bagian atas
+          if (skip && (t.includes(':') || t.startsWith('--') || t === '')) {
+            continue;
+          }
+          skip = false;
+          contentLines.push(line);
+        }
+      }
+
+      let finalResult = contentLines.join('\n').trim();
+      return finalResult.length > 0 ? finalResult : bodyText;
+    }
+
+    async function loadInbox() {
+      const activeEmail = currentEmailDisplay.textContent.trim();
+      inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--text-muted); padding: 30px; font-weight: 600;">Memuat pesan masuk...</p>`;
+
+      try {
+        const response = await fetch(`${WORKER_URL}/api/messages?email=${activeEmail}`);
+        const emails = await response.json();
+
+        msgCounter.textContent = `${emails.length} pesan masuk`;
+
+        if (!emails || emails.length === 0) {
+          inboxContentArea.innerHTML = `
+            <div class="empty-inbox">
+              <div class="empty-icon">
+                <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                  <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                </svg>
+              </div>
+              <h3>Your inbox is empty</h3>
+              <p>Incoming emails will appear here automatically.</p>
+            </div>
+          `;
+          return;
+        }
+
+        let listHtml = `<div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; padding-right: 4px;">`;
+        
+        emails.forEach((mail) => {
+          let cleanBody = cleanEmailBody(mail.body);
+          listHtml += `
+            <div class="email-item">
+              <div style="font-weight: 700; font-size: 0.9rem; color: var(--berry-dark); margin-bottom: 4px;">Dari: ${mail.sender}</div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 8px;">Subjek: ${mail.subject}</div>
+              <div class="email-body-content">${cleanBody}</div>
+            </div>
+          `;
+        });
+
+        listHtml += `</div>`;
+        inboxContentArea.innerHTML = listHtml;
+
+      } catch (err) {
+        console.error(err);
+        inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--berry-red); padding: 30px; font-weight: 600;">Gagal memuat pesan dari server.</p>`;
+      }
+    }
+
+    setEmailBtn.addEventListener('click', () => {
+      const user = usernameInput.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '') || 'strawberry';
+      currentEmailDisplay.textContent = `${user}@${chosenDomain}`;
+      domainMenu.classList.remove('open');
+      loadInbox();
+    });
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(currentEmailDisplay.textContent);
+      copyBtn.textContent = 'Tersalin! 🍓';
+      setTimeout(() => { copyBtn.textContent = 'Salin'; }, 1800);
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      refreshIcon.classList.remove('spin');
+      void refreshIcon.offsetWidth; 
+      refreshIcon.classList.add('spin');
+      loadInbox();
+    });
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem('mailbox_theme') || 'strawberry';
+      applyTheme(savedTheme);
+      loadInbox();
+    };
+  </script>
+</body>
+</html>

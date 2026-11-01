@@ -252,8 +252,13 @@
       box-shadow: 0 2px 6px rgba(255, 59, 92, 0.12);
     }
 
-    .inbox-card { min-height: 330px; display: flex; flex-direction: column; }
-    .inbox-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .inbox-card {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .inbox-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
     .inbox-status-group { display: flex; flex-direction: column; gap: 6px; }
     .inbox-title-row { display: flex; align-items: center; gap: 10px; }
     .inbox-title-row h2 { font-size: 1.25rem; font-weight: 700; color: var(--berry-dark); }
@@ -303,8 +308,42 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Area List Pesan yang Rapi & Bisa di-Scroll */
+    #inboxContentArea {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .email-item {
+      background: var(--bg-cream);
+      border: 1.5px solid var(--berry-border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    .email-body-content {
+      font-size: 0.84rem;
+      color: var(--berry-dark);
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--berry-border);
+      margin-top: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    /* Agar gambar atau elemen di dalam email tidak meluber keluar */
+    .email-body-content img {
+      max-width: 100% !important;
+      height: auto !important;
+      border-radius: 8px;
+    }
+
     .empty-inbox {
-      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -467,129 +506,4 @@
 
     document.querySelectorAll('.theme-option').forEach(opt => {
       opt.addEventListener('click', () => {
-        applyTheme(opt.getAttribute('data-theme'));
-        themeMenu.classList.remove('open');
-      });
-    });
-
-    domainTrigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      domainMenu.classList.toggle('open');
-      domainTrigger.classList.toggle('active');
-      themeMenu.classList.remove('open');
-    });
-
-    document.querySelectorAll('.dropdown-option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        chosenDomain = opt.getAttribute('data-domain');
-        selectedDomainText.textContent = chosenDomain;
-        domainMenu.classList.remove('open');
-        domainTrigger.classList.remove('active');
-      });
-    });
-
-    document.addEventListener('click', () => {
-      domainMenu.classList.remove('open');
-      domainTrigger.classList.remove('active');
-      themeMenu.classList.remove('open');
-    });
-
-    // Pembersih super kuat untuk membuang teks header email mentah
-    function cleanEmailBody(bodyText) {
-      if (!bodyText) return "(Tidak ada isi pesan)";
-      
-      // Jika teks mengandung pembatas email atau garis baru ganda, ambil bagian teks bawahnya (biasanya isi pesan asli)
-      let parts = bodyText.split(/\r?\n\r?\n/);
-      // Cari bagian paragraf yang tidak diawali kata kunci header teknis
-      let cleanParagraphs = parts.filter(p => {
-        let trimmed = p.trim();
-        return !trimmed.startsWith('Received:') && 
-               !trimmed.startsWith('DKIM-Signature:') && 
-               !trimmed.startsWith('Content-Type:') && 
-               !trimmed.startsWith('MIME-Version:') && 
-               !trimmed.startsWith('Authentication-Results:') &&
-               !trimmed.includes('cloudflare-email.net');
-      });
-
-      if (cleanParagraphs.length > 0) {
-        return cleanParagraphs.join('\n\n').trim();
-      }
-      return bodyText;
-    }
-
-    async function loadInbox() {
-      const activeEmail = currentEmailDisplay.textContent.trim();
-      inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--text-muted); padding: 30px; font-weight: 600;">Memuat pesan masuk...</p>`;
-
-      try {
-        const response = await fetch(`${WORKER_URL}/api/messages?email=${activeEmail}`);
-        const emails = await response.json();
-
-        msgCounter.textContent = `${emails.length} pesan masuk`;
-
-        if (!emails || emails.length === 0) {
-          inboxContentArea.innerHTML = `
-            <div class="empty-inbox">
-              <div class="empty-icon">
-                <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
-                  <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                </svg>
-              </div>
-              <h3>Your inbox is empty</h3>
-              <p>Incoming emails will appear here automatically.</p>
-            </div>
-          `;
-          return;
-        }
-
-        let listHtml = `<div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; padding-right: 4px;">`;
-        
-        emails.forEach((mail) => {
-          let cleanBody = cleanEmailBody(mail.body);
-          listHtml += `
-            <div style="background: var(--bg-cream); border: 1.5px solid var(--berry-border); border-radius: 16px; padding: 14px 16px;">
-              <div style="font-weight: 700; font-size: 0.9rem; color: var(--berry-dark); margin-bottom: 4px;">Dari: ${mail.sender}</div>
-              <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 8px;">Subjek: ${mail.subject}</div>
-              <div style="font-size: 0.84rem; color: var(--berry-dark); background: #ffffff; padding: 12px; border-radius: 10px; border: 1px solid var(--berry-border); white-space: pre-wrap; word-break: break-all;">${cleanBody}</div>
-            </div>
-          `;
-        });
-
-        listHtml += `</div>`;
-        inboxContentArea.innerHTML = listHtml;
-
-      } catch (err) {
-        console.error(err);
-        inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--berry-red); padding: 30px; font-weight: 600;">Gagal memuat pesan dari server.</p>`;
-      }
-    }
-
-    setEmailBtn.addEventListener('click', () => {
-      const user = usernameInput.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '') || 'strawberry';
-      currentEmailDisplay.textContent = `${user}@${chosenDomain}`;
-      domainMenu.classList.remove('open');
-      loadInbox();
-    });
-
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(currentEmailDisplay.textContent);
-      copyBtn.textContent = 'Tersalin! 🍓';
-      setTimeout(() => { copyBtn.textContent = 'Salin'; }, 1800);
-    });
-
-    refreshBtn.addEventListener('click', () => {
-      refreshIcon.classList.remove('spin');
-      void refreshIcon.offsetWidth; 
-      refreshIcon.classList.add('spin');
-      loadInbox();
-    });
-
-    window.onload = () => {
-      const savedTheme = localStorage.getItem('mailbox_theme') || 'strawberry';
-      applyTheme(savedTheme);
-      loadInbox();
-    };
-  </script>
-</body>
-</html>
+        apply

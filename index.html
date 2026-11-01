@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -31,7 +30,6 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
       padding: 20px 16px 36px;
     }
 
@@ -311,15 +309,16 @@
       padding-right: 2px;
     }
 
-    /* Kotak Jeda Antar Pesan Masuk */
+    /* Kotak Jeda Antar Pesan dengan Garis Pemisah */
     .email-item {
       background: var(--bg-cream);
       border: 1.8px solid var(--berry-border);
       border-radius: 18px;
       padding: 16px;
-      margin-bottom: 16px; /* Memberikan jeda jarak antar pesan */
+      margin-bottom: 20px; /* Jeda jarak antar pesan */
       word-break: break-word;
       box-shadow: 0 4px 12px rgba(92, 22, 36, 0.04);
+      border-bottom: 4px solid var(--berry-soft); /* Garis pemisah tegas */
     }
 
     .email-body-content {
@@ -415,7 +414,7 @@
       </div>
 
       <div class="active-email-bar">
-        <span id="currentEmailDisplay">berrysweet@cavela.my.id</span>
+        <span id="currentEmailDisplay">strawberry@cavela.my.id</span>
         <button class="copy-badge" id="copyBtn">Salin</button>
       </div>
     </section>
@@ -512,4 +511,149 @@
     });
 
     domainTrigger.addEventListener('click', (e) => {
-      e
+      e.stopPropagation();
+      domainMenu.classList.toggle('open');
+      domainTrigger.classList.toggle('active');
+      themeMenu.classList.remove('open');
+    });
+
+    document.querySelectorAll('.dropdown-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        chosenDomain = opt.getAttribute('data-domain');
+        selectedDomainText.textContent = chosenDomain;
+        domainMenu.classList.remove('open');
+        domainTrigger.classList.remove('active');
+      });
+    });
+
+    document.addEventListener('click', () => {
+      domainMenu.classList.remove('open');
+      domainTrigger.classList.remove('active');
+      themeMenu.classList.remove('open');
+    });
+
+    // Pembersih Super Presisi: Membuang semua metadata berantakan, dan hanya menyisakan isi pesan murni
+    function cleanEmailBody(bodyText) {
+      if (!bodyText) return "(Tidak ada isi pesan)";
+      
+      let lines = bodyText.split(/\r?\n/);
+      let cleanLines = [];
+      let capturing = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        let trimmed = line.trim();
+
+        if (trimmed.toLowerCase().includes('content-type: text/plain') || trimmed.toLowerCase().includes('content-type: text/html')) {
+          capturing = true;
+          if (i + 1 < lines.length && lines[i+1].trim() === '') {
+            i++;
+          }
+          continue;
+        }
+
+        if (capturing && (trimmed.startsWith('--') || trimmed.toLowerCase().includes('content-type:'))) {
+          capturing = false;
+        }
+
+        if (capturing) {
+          cleanLines.push(line);
+        }
+      }
+
+      if (cleanLines.length === 0 || cleanLines.join('').trim() === '') {
+        let skipMetadata = true;
+        for (let line of lines) {
+          let t = line.trim();
+          if (skipMetadata && (t.startsWith('Date:') || t.startsWith('From:') || t.startsWith('To:') || 
+              t.startsWith('Subject:') || t.startsWith('Message-ID:') || 
+              t.startsWith('Content-Type:') || t.startsWith('MIME-Version:') || 
+              t.startsWith('Feedback-ID:') || t.startsWith('X-') || 
+              t.includes('us-ascii') || t.includes('=?') || t.startsWith('--') || t === '')) {
+            continue;
+          }
+          skipMetadata = false;
+          cleanLines.push(line);
+        }
+      }
+
+      let result = cleanLines.join('\n').trim();
+      return result.length > 0 ? result : bodyText;
+    }
+
+    async function loadInbox() {
+      const activeEmail = currentEmailDisplay.textContent.trim();
+      inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--text-muted); padding: 30px; font-weight: 600;">Memuat pesan masuk...</p>`;
+
+      try {
+        const response = await fetch(`${WORKER_URL}/api/messages?email=${activeEmail}`);
+        const emails = await response.json();
+
+        msgCounter.textContent = `${emails.length} pesan masuk`;
+
+        if (!emails || emails.length === 0) {
+          inboxContentArea.innerHTML = `
+            <div class="empty-inbox">
+              <div class="empty-icon">
+                <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                  <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                </svg>
+              </div>
+              <h3>Your inbox is empty</h3>
+              <p>Incoming emails will appear here automatically.</p>
+            </div>
+          `;
+          return;
+        }
+
+        let listHtml = `<div style="margin-top: 14px; display: flex; flex-direction: column; gap: 4px; max-height: 420px; overflow-y: auto; padding-right: 4px;">`;
+        
+        emails.forEach((mail) => {
+          let cleanBody = cleanEmailBody(mail.body);
+          listHtml += `
+            <div class="email-item">
+              <div style="font-weight: 700; font-size: 0.9rem; color: var(--berry-dark); margin-bottom: 4px;">Dari: ${mail.sender}</div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 8px;">Subjek: ${mail.subject}</div>
+              <div class="email-body-content">${cleanBody}</div>
+            </div>
+          `;
+        });
+
+        listHtml += `</div>`;
+        inboxContentArea.innerHTML = listHtml;
+
+      } catch (err) {
+        console.error(err);
+        inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--berry-red); padding: 30px; font-weight: 600;">Gagal memuat pesan dari server.</p>`;
+      }
+    }
+
+    setEmailBtn.addEventListener('click', () => {
+      const user = usernameInput.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '') || 'strawberry';
+      currentEmailDisplay.textContent = `${user}@${chosenDomain}`;
+      domainMenu.classList.remove('open');
+      loadInbox();
+    });
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(currentEmailDisplay.textContent);
+      copyBtn.textContent = 'Tersalin! 🍓';
+      setTimeout(() => { copyBtn.textContent = 'Salin'; }, 1800);
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      refreshIcon.classList.remove('spin');
+      void refreshIcon.offsetWidth; 
+      refreshIcon.classList.add('spin');
+      loadInbox();
+    });
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem('mailbox_theme') || 'strawberry';
+      applyTheme(savedTheme);
+      loadInbox();
+    };
+  </script>
+</body>
+</html>

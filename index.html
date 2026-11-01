@@ -308,7 +308,6 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Kotak Inbox agar bisa di-scroll dan rapi */
     #inboxContentArea {
       max-height: 420px;
       overflow-y: auto;
@@ -336,7 +335,6 @@
       overflow-y: auto;
     }
 
-    /* Mengatur agar gambar di dalam email tidak meluber dan pas */
     .email-body-content img {
       max-width: 100% !important;
       height: auto !important;
@@ -464,7 +462,7 @@
 
     const domainTrigger = document.getElementById('domainTrigger');
     const domainMenu = document.getElementById('domainMenu');
-    const selectedDomainText = document.getElementById('selectedDomainText');
+    const selectedDomainTitle = document.getElementById('selectedDomainText');
     const usernameInput = document.getElementById('usernameInput');
     const setEmailBtn = document.getElementById('setEmailBtn');
     const currentEmailDisplay = document.getElementById('currentEmailDisplay');
@@ -523,7 +521,7 @@
     document.querySelectorAll('.dropdown-option').forEach(opt => {
       opt.addEventListener('click', () => {
         chosenDomain = opt.getAttribute('data-domain');
-        selectedDomainText.textContent = chosenDomain;
+        selectedDomainTitle.textContent = chosenDomain;
         domainMenu.classList.remove('open');
         domainTrigger.classList.remove('active');
       });
@@ -535,24 +533,39 @@
       themeMenu.classList.remove('open');
     });
 
-    // Fungsi pembersih cerdas: membuang header teknis dan menampilkan teks/gambar asli
+    // Pembersih Super Ampuh untuk Menghilangkan Kode Pembatas MIME (--0000...)
     function cleanEmailBody(bodyText) {
       if (!bodyText) return "(Tidak ada isi pesan)";
       
-      // Jika body berupa HTML atau mengandung tag gambar/teks, kita bersihkan bagian atasnya jika ada header teks mentah
-      let parts = bodyText.split(/\r?\n\r?\n/);
-      let cleanParts = parts.filter(p => {
-        let trimmed = p.trim();
-        return !trimmed.startsWith('Received:') && 
-               !trimmed.startsWith('DKIM-Signature:') && 
-               !trimmed.startsWith('Content-Type:') && 
-               !trimmed.startsWith('MIME-Version:') && 
-               !trimmed.startsWith('Authentication-Results:') &&
-               !trimmed.includes('cloudflare-email.net');
-      });
+      // Jika berisi kode pembatas multipart (seperti --0000...)
+      if (bodyText.includes('Content-Type:') && bodyText.includes('--')) {
+        let lines = bodyText.split(/\r?\n/);
+        let actualContent = [];
+        let capture = false;
 
-      let result = cleanParts.length > 0 ? cleanParts.join('\n\n').trim() : bodyText;
-      return result;
+        for (let i = 0; i < lines.length; i++) {
+          let line = lines[i];
+          // Jika menemukan penanda teks/plain atau teks/html, baris-baris berikutnya adalah isinya
+          if (line.includes('Content-Type: text/plain') || line.includes('Content-Type: text/html')) {
+            // Lewati baris kosong setelah content-type
+            if (i + 1 < lines.length && lines[i+1].trim() === '') i++;
+            capture = true;
+            continue;
+          }
+          // Jika bertemu pembatas berikutnya (dimulai dengan --), berhenti menangkap bagian itu
+          if (capture && line.trim().startsWith('--')) {
+            capture = false;
+          }
+          if (capture) {
+            actualContent.push(line);
+          }
+        }
+
+        let cleaned = actualContent.join('\n').trim();
+        if (cleaned.length > 0) return cleaned;
+      }
+
+      return bodyText;
     }
 
     async function loadInbox() {

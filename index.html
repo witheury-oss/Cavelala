@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -254,7 +255,7 @@
     }
 
     .inbox-card { min-height: 330px; display: flex; flex-direction: column; }
-    .inbox-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .inbox-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
     .inbox-status-group { display: flex; flex-direction: column; gap: 6px; }
     .inbox-title-row { display: flex; align-items: center; gap: 10px; }
     .inbox-title-row h2 { font-size: 1.25rem; font-weight: 700; color: var(--berry-dark); }
@@ -304,8 +305,45 @@
       to { transform: rotate(360deg); }
     }
 
+    #inboxContentArea {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    /* Kotak Jeda Antar Pesan Masuk */
+    .email-item {
+      background: var(--bg-cream);
+      border: 1.8px solid var(--berry-border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px; /* Memberikan jeda jarak antar pesan */
+      word-break: break-word;
+      box-shadow: 0 4px 12px rgba(92, 22, 36, 0.04);
+    }
+
+    .email-body-content {
+      font-size: 0.86rem;
+      color: var(--berry-dark);
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--berry-border);
+      margin-top: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    .email-body-content img {
+      max-width: 100% !important;
+      height: auto !important;
+      border-radius: 8px;
+      display: block;
+      margin: 8px auto;
+    }
+
     .empty-inbox {
-      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -377,7 +415,7 @@
       </div>
 
       <div class="active-email-bar">
-        <span id="currentEmailDisplay">strawberry@cavela.my.id</span>
+        <span id="currentEmailDisplay">berrysweet@cavela.my.id</span>
         <button class="copy-badge" id="copyBtn">Salin</button>
       </div>
     </section>
@@ -474,150 +512,4 @@
     });
 
     domainTrigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      domainMenu.classList.toggle('open');
-      domainTrigger.classList.toggle('active');
-      themeMenu.classList.remove('open');
-    });
-
-    document.querySelectorAll('.dropdown-option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        chosenDomain = opt.getAttribute('data-domain');
-        selectedDomainText.textContent = chosenDomain;
-        domainMenu.classList.remove('open');
-        domainTrigger.classList.remove('active');
-      });
-    });
-
-    document.addEventListener('click', () => {
-      domainMenu.classList.remove('open');
-      domainTrigger.classList.remove('active');
-      themeMenu.classList.remove('open');
-    });
-
-    // Pembersih Super Presisi: Menghilangkan seluruh baris teknis dan menyisakan isi pesan aslinya saja
-    function cleanEmailBody(bodyText) {
-      if (!bodyText) return "(Tidak ada isi pesan)";
-      
-      let lines = bodyText.split(/\r?\n/);
-      let contentLines = [];
-      let capturing = false;
-
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
-        let trimmed = line.trim();
-
-        // Deteksi awal bagian isi teks biasa atau html murni
-        if (trimmed.toLowerCase().includes('content-type: text/plain') || trimmed.toLowerCase().includes('content-type: text/html')) {
-          capturing = true;
-          // Lewati baris kosong setelah header content-type
-          if (i + 1 < lines.length && lines[i+1].trim() === '') {
-            i++;
-          }
-          continue;
-        }
-
-        // Jika menemui tanda batas MIME penutup berikutnya, berhenti menangkap
-        if (capturing && trimmed.startsWith('--')) {
-          capturing = false;
-        }
-
-        if (capturing) {
-          contentLines.push(line);
-        }
-      }
-
-      // Jika metode pertama tidak menangkap apa pun, gunakan penyaringan baris metadata kasar secara aman
-      if (contentLines.length === 0 || contentLines.join('').trim() === '') {
-        let skip = true;
-        for (let line of lines) {
-          let t = line.trim();
-          // Lewati baris-baris metadata header email di bagian atas
-          if (skip && (t.includes(':') || t.startsWith('--') || t === '')) {
-            continue;
-          }
-          skip = false;
-          contentLines.push(line);
-        }
-      }
-
-      let finalResult = contentLines.join('\n').trim();
-      return finalResult.length > 0 ? finalResult : bodyText;
-    }
-
-    async function loadInbox() {
-      const activeEmail = currentEmailDisplay.textContent.trim();
-      inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--text-muted); padding: 30px; font-weight: 600;">Memuat pesan masuk...</p>`;
-
-      try {
-        const response = await fetch(`${WORKER_URL}/api/messages?email=${activeEmail}`);
-        const emails = await response.json();
-
-        msgCounter.textContent = `${emails.length} pesan masuk`;
-
-        if (!emails || emails.length === 0) {
-          inboxContentArea.innerHTML = `
-            <div class="empty-inbox">
-              <div class="empty-icon">
-                <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
-                  <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                </svg>
-              </div>
-              <h3>Your inbox is empty</h3>
-              <p>Incoming emails will appear here automatically.</p>
-            </div>
-          `;
-          return;
-        }
-
-        let listHtml = `<div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; padding-right: 4px;">`;
-        
-        emails.forEach((mail) => {
-          let cleanBody = cleanEmailBody(mail.body);
-          listHtml += `
-            <div class="email-item">
-              <div style="font-weight: 700; font-size: 0.9rem; color: var(--berry-dark); margin-bottom: 4px;">Dari: ${mail.sender}</div>
-              <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 8px;">Subjek: ${mail.subject}</div>
-              <div class="email-body-content">${cleanBody}</div>
-            </div>
-          `;
-        });
-
-        listHtml += `</div>`;
-        inboxContentArea.innerHTML = listHtml;
-
-      } catch (err) {
-        console.error(err);
-        inboxContentArea.innerHTML = `<p style="text-align:center; color: var(--berry-red); padding: 30px; font-weight: 600;">Gagal memuat pesan dari server.</p>`;
-      }
-    }
-
-    setEmailBtn.addEventListener('click', () => {
-      const user = usernameInput.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '') || 'strawberry';
-      currentEmailDisplay.textContent = `${user}@${chosenDomain}`;
-      domainMenu.classList.remove('open');
-      loadInbox();
-    });
-
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(currentEmailDisplay.textContent);
-      copyBtn.textContent = 'Tersalin! 🍓';
-      setTimeout(() => { copyBtn.textContent = 'Salin'; }, 1800);
-    });
-
-    refreshBtn.addEventListener('click', () => {
-      refreshIcon.classList.remove('spin');
-      void refreshIcon.offsetWidth; 
-      refreshIcon.classList.add('spin');
-      loadInbox();
-    });
-
-    window.onload = () => {
-      const savedTheme = localStorage.getItem('mailbox_theme') || 'strawberry';
-      applyTheme(savedTheme);
-      loadInbox();
-    };
-  </script>
-</body>
-</html>
+      e

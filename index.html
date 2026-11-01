@@ -253,7 +253,7 @@
     }
 
     .inbox-card { min-height: 330px; display: flex; flex-direction: column; }
-    .inbox-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .inbox-top { display: flex; justify-content: space-between; align-items: flex-start; }
     .inbox-status-group { display: flex; flex-direction: column; gap: 6px; }
     .inbox-title-row { display: flex; align-items: center; gap: 10px; }
     .inbox-title-row h2 { font-size: 1.25rem; font-weight: 700; color: var(--berry-dark); }
@@ -303,46 +303,8 @@
       to { transform: rotate(360deg); }
     }
 
-    #inboxContentArea {
-      max-height: 420px;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
-    /* Kotak Jeda Antar Pesan dengan Garis Pemisah */
-    .email-item {
-      background: var(--bg-cream);
-      border: 1.8px solid var(--berry-border);
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 20px; /* Jeda jarak antar pesan */
-      word-break: break-word;
-      box-shadow: 0 4px 12px rgba(92, 22, 36, 0.04);
-      border-bottom: 4px solid var(--berry-soft); /* Garis pemisah tegas */
-    }
-
-    .email-body-content {
-      font-size: 0.86rem;
-      color: var(--berry-dark);
-      background: #ffffff;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid var(--berry-border);
-      margin-top: 10px;
-      max-height: 280px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-
-    .email-body-content img {
-      max-width: 100% !important;
-      height: auto !important;
-      border-radius: 8px;
-      display: block;
-      margin: 8px auto;
-    }
-
     .empty-inbox {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -532,12 +494,12 @@
       themeMenu.classList.remove('open');
     });
 
-    // Pembersih Super Presisi: Membuang semua metadata berantakan, dan hanya menyisakan isi pesan murni
+    // Pembersih super presisi: Ekstrak Sender, Subject, dan Clean Body secara bersih tanpa metadata mentah & kode boundary MIME
     function cleanEmailBody(bodyText) {
       if (!bodyText) return "(Tidak ada isi pesan)";
       
       let lines = bodyText.split(/\r?\n/);
-      let cleanLines = [];
+      let contentLines = [];
       let capturing = false;
 
       for (let i = 0; i < lines.length; i++) {
@@ -557,27 +519,33 @@
         }
 
         if (capturing) {
-          cleanLines.push(line);
+          contentLines.push(line);
         }
       }
 
-      if (cleanLines.length === 0 || cleanLines.join('').trim() === '') {
+      if (contentLines.length === 0 || contentLines.join('').trim() === '') {
         let skipMetadata = true;
         for (let line of lines) {
           let t = line.trim();
-          if (skipMetadata && (t.startsWith('Date:') || t.startsWith('From:') || t.startsWith('To:') || 
+          if (
+            skipMetadata && (
+              t.startsWith('Date:') || t.startsWith('From:') || t.startsWith('To:') || 
               t.startsWith('Subject:') || t.startsWith('Message-ID:') || 
               t.startsWith('Content-Type:') || t.startsWith('MIME-Version:') || 
               t.startsWith('Feedback-ID:') || t.startsWith('X-') || 
-              t.includes('us-ascii') || t.includes('=?') || t.startsWith('--') || t === '')) {
+              t.startsWith('Received:') || t.startsWith('DKIM-Signature:') ||
+              t.startsWith('Authentication-Results:') ||
+              t.includes('us-ascii') || t.includes('=?') || t.startsWith('--') || t === ''
+            )
+          ) {
             continue;
           }
           skipMetadata = false;
-          cleanLines.push(line);
+          contentLines.push(line);
         }
       }
 
-      let result = cleanLines.join('\n').trim();
+      let result = contentLines.join('\n').trim();
       return result.length > 0 ? result : bodyText;
     }
 
@@ -607,15 +575,15 @@
           return;
         }
 
-        let listHtml = `<div style="margin-top: 14px; display: flex; flex-direction: column; gap: 4px; max-height: 420px; overflow-y: auto; padding-right: 4px;">`;
+        let listHtml = `<div style="margin-top: 14px; display: flex; flex-direction: column; gap: 16px; max-height: 420px; overflow-y: auto; padding-right: 4px;">`;
         
         emails.forEach((mail) => {
           let cleanBody = cleanEmailBody(mail.body);
           listHtml += `
-            <div class="email-item">
+            <div style="background: var(--bg-cream); border: 1.8px solid var(--berry-border); border-radius: 18px; padding: 16px; margin-bottom: 12px; border-bottom: 4px solid var(--berry-soft); box-shadow: 0 4px 12px rgba(92, 22, 36, 0.04);">
               <div style="font-weight: 700; font-size: 0.9rem; color: var(--berry-dark); margin-bottom: 4px;">Dari: ${mail.sender}</div>
               <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 8px;">Subjek: ${mail.subject}</div>
-              <div class="email-body-content">${cleanBody}</div>
+              <div style="font-size: 0.84rem; color: var(--berry-dark); background: #ffffff; padding: 14px; border-radius: 12px; border: 1px solid var(--berry-border); white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto;">${cleanBody}</div>
             </div>
           `;
         });

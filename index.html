@@ -494,7 +494,7 @@
       themeMenu.classList.remove('open');
     });
 
-    // Pembersih super presisi: Ekstrak Sender, Subject, dan Clean Body secara bersih tanpa metadata mentah & kode boundary MIME
+    // Pembersih super rapi untuk mengekstrak isi pesan bersih dan tanggal/waktu
     function cleanEmailBody(bodyText) {
       if (!bodyText) return "(Tidak ada isi pesan)";
       
@@ -579,10 +579,14 @@
         
         emails.forEach((mail) => {
           let cleanBody = cleanEmailBody(mail.body);
+          // Ambil tanggal/waktu dari data mail (jika ada properti date dari worker, atau gunakan waktu sekarang/format rapi)
+          let mailDate = mail.date ? new Date(mail.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : 'Baru saja';
+          
           listHtml += `
-            <div style="background: var(--bg-cream); border: 1.8px solid var(--berry-border); border-radius: 18px; padding: 16px; margin-bottom: 12px; border-bottom: 4px solid var(--berry-soft); box-shadow: 0 4px 12px rgba(92, 22, 36, 0.04);">
+            <div style="background: var(--bg-cream); border: 1.8px solid var(--berry-border); border-radius: 18px; padding: 16px; margin-bottom: 14px; border-bottom: 4px solid var(--berry-soft); box-shadow: 0 4px 12px rgba(92, 22, 36, 0.04);">
               <div style="font-weight: 700; font-size: 0.9rem; color: var(--berry-dark); margin-bottom: 4px;">Dari: ${mail.sender}</div>
-              <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 8px;">Subjek: ${mail.subject}</div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--berry-red); margin-bottom: 4px;">Subjek: ${mail.subject}</div>
+              <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Waktu: ${mailDate}</div>
               <div style="font-size: 0.84rem; color: var(--berry-dark); background: #ffffff; padding: 14px; border-radius: 12px; border: 1px solid var(--berry-border); white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto;">${cleanBody}</div>
             </div>
           `;
